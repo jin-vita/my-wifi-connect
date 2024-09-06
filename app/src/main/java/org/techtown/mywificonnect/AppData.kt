@@ -7,7 +7,7 @@ import android.widget.Toast
 object AppData {
     val logList by lazy { mutableListOf<String>() }
 
-    var isDebug = true
+    private var isDebug = true
     fun debug(tag: String, msg: String) {
         if (isDebug) Log.d(tag, msg)
     }

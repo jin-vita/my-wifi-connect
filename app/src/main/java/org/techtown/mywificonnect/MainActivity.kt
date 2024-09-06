@@ -40,13 +40,13 @@ class MainActivity : AppCompatActivity() {
             ssid = idInput.text.toString()
             pw = pwInput.text.toString()
             if (ssid.isBlank() || pw.isBlank()) {
-                printLog("입력값을 확인해주세요. ssid: $ssid, pw: $pw")
+                AppData.showToast(this@MainActivity, "입력값을 확인해주세요. ssid: $ssid, pw: $pw")
                 return
             }
         } else {
             ssid = id
             pw = ssidList[ssid] ?: run {
-                printLog("리스트에 없는 ssid 입니다. ssid: $ssid")
+                AppData.showToast(this@MainActivity, "리스트에 없는 ssid 입니다. ssid: $ssid")
                 return
             }
         }
@@ -64,29 +64,35 @@ class MainActivity : AppCompatActivity() {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
         if (callBackList[ssid] != null) {
-            printLog("이미 callback 등록된 상태. 재등록 하지 않음.")
+            AppData.showToast(this@MainActivity, "이미 callback 등록된 상태.")
             return
         }
 
         val networkCallback = object : ConnectivityManager.NetworkCallback() {
+            // 연결되었을 때
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
                 printLog("[$ssid] onAvailable")
             }
 
+            // 연결 시도 했는데 wifi 모듈이 꺼져있을 때
             override fun onUnavailable() {
                 super.onUnavailable()
                 printLog("onUnavailable")
             }
 
+            // 연결을 잃었을 때
             override fun onLost(network: Network) {
                 super.onLost(network)
                 printLog("[$ssid] onLost")
+
+                // 콜백 제거
                 connectivityManager.unregisterNetworkCallback(callBackList[ssid]!!)
                 callBackList.remove(ssid)
             }
         }
 
+        // 콜백 등록
         connectivityManager.requestNetwork(request, networkCallback)
         callBackList[ssid] = networkCallback
     }
